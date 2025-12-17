@@ -2,46 +2,42 @@ import { useState } from "react";
 
 function App() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
+  const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const sendMessage = async () => {
-    if (!input) return;
+  const handleSend = async () => {
+    // 🔴 対策②：空入力チェック（超重要）
+    if (!input.trim()) {
+      alert("質問を入力してください");
+      return;
+    }
 
-    setMessages((prev) => [...prev, `👤 ${input}`]);
     setLoading(true);
+    setAnswer("");
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: input }),
-    });
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: input, // ← 必ず文字列が入る
+        }),
+      });
 
-    const data = await res.json();
-    setMessages((prev) => [...prev, `🤖 ${data.answer}`]);
-    setInput("");
-    setLoading(false);
+      if (!res.ok) {
+        throw new Error("API エラーが発生しました");
+      }
+
+      const data = await res.json();
+      setAnswer(data.answer ?? "回答を取得できませんでした");
+    } catch (err) {
+      console.error(err);
+      setAnswer("エラーが発生しました。もう一度お試しください。");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Care AI Chatbot</h2>
-
-      <div style={{ border: "1px solid #ccc", padding: 10, minHeight: 200 }}>
-        {messages.map((m, i) => (
-          <div key={i}>{m}</div>
-        ))}
-        {loading && <div>🤖 回答中...</div>}
-      </div>
-
-      <input
-        style={{ width: "80%" }}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-      />
-      <button onClick={sendMessage}>送信</button>
-    </div>
-  );
-}
-
-export default App;
