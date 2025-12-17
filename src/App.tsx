@@ -32,13 +32,11 @@ function App() {
 
       const data = await res.json();
       setAnswer(data.answer ?? "回答を取得できませんでした");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setAnswer("エラーが発生しました。もう一度お試しください。");
-    } finally {
-      setLoading(false);
+      setAnswer(error?.message ??
+      "通信エラーが発生しました。");
     }
-  };
 
   return (
     <div style={{ maxWidth: 600, margin: "40px auto", fontFamily: "sans-serif" }}>
