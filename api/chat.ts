@@ -13,19 +13,24 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const message = req.body?.message;
-
-  if (!message || typeof message !== "string" || !message.trim()) {
-    return res.status(400).json({ answer: "質問内容が空です。" });
-  }
-
   try {
+    const { message } = req.body ?? {};
+
+    if (!message || typeof message !== "string") {
+      return res.status(400).json({ answer: "質問内容が空です。" });
+    }
+
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
-
       messages: [
-        { role: "system", content: "あなたは介護業界向けのITサポートAIです。" },
-        { role: "user", content: message },
+        {
+          role: "system",
+          content: "あなたは介護業界向けのITサポートAIです。",
+        },
+        {
+          role: "user",
+          content: message,
+        },
       ],
     });
 
@@ -34,10 +39,10 @@ export default async function handler(
       "回答を生成できませんでした。";
 
     return res.status(200).json({ answer });
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .json({ answer: "AI呼び出しでエラーが発生しました。" });
+  } catch (error) {
+    console.error("Groq API Error:", error);
+    return res.status(500).json({
+      answer: "AI呼び出しでエラーが発生しました。",
+    });
   }
 }
