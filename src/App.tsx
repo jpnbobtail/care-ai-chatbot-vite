@@ -1,16 +1,12 @@
 import { useState } from "react";
 
 function App() {
-  const [input, setInput] = useState("");
+  const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSend = async () => {
-    // 空入力防止
-    if (!input.trim()) {
-      alert("質問を入力してください");
-      return;
-    }
+  const sendQuestion = async () => {
+    if (!question.trim()) return;
 
     setLoading(true);
     setAnswer("");
@@ -21,49 +17,43 @@ function App() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          message: input,
-        }),
+        body: JSON.stringify({ message: question }),
       });
 
-      if (!res.ok) {
-        throw new Error("APIエラーが発生しました");
-      }
-
       const data = await res.json();
-      setAnswer(data.answer ?? "回答を取得できませんでした");
-    } catch (error: any) {
+      setAnswer(data.answer ?? "回答を取得できませんでした。");
+    } catch (error) {
       console.error(error);
-      setAnswer(error?.message ??
-      "通信エラーが発生しました。");
+      setAnswer("エラーが発生しました。もう一度お試しください。");
+    } finally {
+      setLoading(false);
     }
+  };
 
   return (
-    <div style={{ maxWidth: 600, margin: "40px auto", fontFamily: "sans-serif" }}>
-      <h2>介護向け IT サポートチャット</h2>
+    <div style={{ maxWidth: 720, margin: "40px auto", fontFamily: "sans-serif" }}>
+      <h1>介護向け IT サポートチャット</h1>
 
       <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="質問を入力してください"
         rows={4}
-        style={{ width: "100%", padding: "8px" }}
+        style={{ width: "100%", padding: 10 }}
+        placeholder="質問を入力してください"
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
       />
 
       <button
-        onClick={handleSend}
+        onClick={sendQuestion}
         disabled={loading}
         style={{ marginTop: 10, padding: "8px 16px" }}
       >
-        {loading ? "回答中..." : "送信"}
+        送信
       </button>
 
-      {answer && (
-        <div style={{ marginTop: 20, padding: 10, border: "1px solid #ccc" }}>
-          <strong>🤖 回答</strong>
-          <p style={{ whiteSpace: "pre-wrap" }}>{answer}</p>
-        </div>
-      )}
+      <div style={{ marginTop: 20 }}>
+        <h3>🤖 回答</h3>
+        <p>{loading ? "回答中..." : answer}</p>
+      </div>
     </div>
   );
 }
