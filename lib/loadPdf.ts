@@ -3,6 +3,8 @@ import path from "path";
 import { createRequire } from "module";
 
 const require = createRequire(import.meta.url);
+
+// ⚠️ pdf-parse を CommonJS として読み込む
 const pdfParse = require("pdf-parse");
 
 export default async function loadPdfTexts(): Promise<string[]> {
@@ -21,7 +23,11 @@ export default async function loadPdfTexts(): Promise<string[]> {
     if (!file.toLowerCase().endsWith(".pdf")) continue;
 
     const buffer = fs.readFileSync(path.join(pdfDir, file));
-    const data = await pdfParse(buffer); // ← ここが重要（.default なし）
+
+    // 🔑 ここがポイント：render を完全に無効化
+    const data = await pdfParse(buffer, {
+      pagerender: () => "",
+    });
 
     if (data?.text) {
       texts.push(data.text);
