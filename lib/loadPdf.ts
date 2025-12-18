@@ -4,13 +4,7 @@ import pdf from "pdf-parse";
 
 export default async function loadPdfTexts(): Promise<string[]> {
   const pdfDir = path.join(process.cwd(), "data/pdfs");
-
-  let files: string[] = [];
-  try {
-    files = fs.readdirSync(pdfDir);
-  } catch {
-    return [];
-  }
+  const files = fs.readdirSync(pdfDir);
 
   const texts: string[] = [];
 
@@ -24,4 +18,5 @@ export default async function loadPdfTexts(): Promise<string[]> {
 
   return texts;
 }
+
 

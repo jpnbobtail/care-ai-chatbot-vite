@@ -1,10 +1,10 @@
-import loadPdfTexts from "./loadPdf";
+import loadPdfTexts from "./loadPdf.js";
 import { splitText } from "./splitText.js";
 import { scoreSimilarity } from "./similarity.js";
 
-export async function searchManual(question: string): Promise<string[]> {
-  const manuals = await loadPdfTexts(); // ← ここが重要
 
+export async function searchManual(question: string): Promise<string[]> {
+  const manuals = await loadPdfTexts();
   const chunks = manuals.flatMap((m) => splitText(m));
 
   const ranked = chunks
@@ -16,3 +16,4 @@ export async function searchManual(question: string): Promise<string[]> {
 
   return ranked.slice(0, 3).map((r) => r.chunk);
 }
+
