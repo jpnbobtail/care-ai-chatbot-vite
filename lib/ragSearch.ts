@@ -1,15 +1,12 @@
-import { loadManualTexts } from "./loadManual.js";
+import { loadPdfTexts } from "./loadPdf.js";
 import { splitText } from "./splitText.js";
 import { scoreSimilarity } from "./similarity.js";
 
-export function searchManual(question: string): string[] {
-  // すべてのマニュアルを読み込む
-  const manuals = loadManualTexts();
+export async function searchManual(question: string): Promise<string[]> {
+  const manuals = await loadPdfTexts(); // ← ここが重要
 
-  // マニュアルを分割して1つの配列にまとめる
-  const chunks = manuals.flatMap((manual) => splitText(manual));
+  const chunks = manuals.flatMap((m) => splitText(m));
 
-  // 質問との類似度を計算
   const ranked = chunks
     .map((chunk) => ({
       chunk,
@@ -17,6 +14,5 @@ export function searchManual(question: string): string[] {
     }))
     .sort((a, b) => b.score - a.score);
 
-  // 上位3件を返す
   return ranked.slice(0, 3).map((r) => r.chunk);
 }
