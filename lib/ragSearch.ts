@@ -1,6 +1,6 @@
-import { loadManualTexts } from "./loadManual";
-import { splitText } from "./splitText";
-import { scoreSimilarity } from "./similarity";
+import { loadManualTexts } from "./loadManual.js";
+import { splitText } from "./splitText.js";
+import { scoreSimilarity } from "./similarity.js";
 
 export function searchManual(question: string): string[] {
   // すべてのマニュアルを読み込む

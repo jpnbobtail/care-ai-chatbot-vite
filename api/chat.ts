@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Groq from "groq-sdk";
-import { searchManual } from "../lib/ragSearch";
+import { searchManual } from "../lib/ragSearch.js";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
