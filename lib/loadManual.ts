@@ -1,11 +1,11 @@
-import fs from "fs";
-import path from "path";
-
 export function loadManualTexts(): string[] {
-  const dir = path.join(process.cwd(), "data/manuals");
-  const files = fs.readdirSync(dir);
+  return [
+    `
+勤怠システムの修正方法について
 
-  return files.map((file) =>
-    fs.readFileSync(path.join(dir, file), "utf-8")
-  );
+1. 勤怠の修正は管理画面から行います。
+2. 修正申請は当日中に行ってください。
+3. 上長の承認が必要です。
+    `,
+  ];
 }
