@@ -1,6 +1,9 @@
 import fs from "fs";
 import path from "path";
-import * as pdfParse from "pdf-parse";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+const pdfParse = require("pdf-parse");
 
 export default async function loadPdfTexts(): Promise<string[]> {
   const pdfDir = path.join(process.cwd(), "data/pdfs");
@@ -18,9 +21,9 @@ export default async function loadPdfTexts(): Promise<string[]> {
     if (!file.toLowerCase().endsWith(".pdf")) continue;
 
     const buffer = fs.readFileSync(path.join(pdfDir, file));
-    const data = await pdfParse.default(buffer);
+    const data = await pdfParse(buffer);
 
-    if (data.text) {
+    if (data?.text) {
       texts.push(data.text);
     }
   }
