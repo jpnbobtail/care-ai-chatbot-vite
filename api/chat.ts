@@ -22,7 +22,7 @@ export default async function handler(
     }
 
     // 🔍 RAG：マニュアル検索
-    const contextChunks = searchManual(message);
+    const contextChunks = await searchManual(message);
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
