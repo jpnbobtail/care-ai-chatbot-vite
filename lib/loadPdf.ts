@@ -21,7 +21,7 @@ export default async function loadPdfTexts(): Promise<string[]> {
     if (!file.toLowerCase().endsWith(".pdf")) continue;
 
     const buffer = fs.readFileSync(path.join(pdfDir, file));
-    const data = await pdfParse(buffer);
+    const data = await pdfParse(buffer); // ← ここが重要（.default なし）
 
     if (data?.text) {
       texts.push(data.text);
@@ -30,4 +30,3 @@ export default async function loadPdfTexts(): Promise<string[]> {
 
   return texts;
 }
-
