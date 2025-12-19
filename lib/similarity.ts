@@ -1,14 +1,8 @@
-export function scoreSimilarity(a: string, b: string): number {
-  const aWords = a.split(/\s+/);
-  const bWords = b.split(/\s+/);
+export function similarity(a: string, b: string): number {
+  const setA = new Set(a);
+  const setB = new Set(b);
 
-  let score = 0;
+  const intersection = [...setA].filter((x) => setB.has(x));
 
-  aWords.forEach((word) => {
-    if (bWords.includes(word)) {
-      score++;
-    }
-  });
-
-  return score;
+  return intersection.length / Math.max(setA.size, setB.size);
 }

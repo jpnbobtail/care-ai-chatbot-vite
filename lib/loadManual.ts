@@ -1,11 +1,17 @@
-export function loadManualTexts(): string[] {
-  return [
-    `
-勤怠システムの修正方法について
+import fs from "fs";
+import path from "path";
 
-1. 勤怠の修正は管理画面から行います。
-2. 修正申請は当日中に行ってください。
-3. 上長の承認が必要です。
-    `,
-  ];
+export default function loadManualTexts(): string[] {
+  const dir = path.join(process.cwd(), "data/manuals");
+
+  if (!fs.existsSync(dir)) {
+    return [];
+  }
+
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith(".txt"))
+    .map((file) =>
+      fs.readFileSync(path.join(dir, file), "utf-8")
+    );
 }

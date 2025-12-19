@@ -2,11 +2,7 @@ import loadManualTexts from "./loadManual.js";
 import { splitText } from "./splitText.js";
 import { similarity } from "./similarity.js";
 
-/**
- * 質問文に近いマニュアルの文章を返す
- */
 export async function searchManual(query: string): Promise<string[]> {
-  // ✅ TXTマニュアルのみ読み込む
   const manuals = loadManualTexts();
 
   if (!manuals.length) {
