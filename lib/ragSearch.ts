@@ -1,4 +1,4 @@
-import loadPdfTexts from "./loadPdf.js";
+import loadManualTexts from "./loadManual.js";
 import { splitText } from "./splitText.js";
 import { scoreSimilarity } from "./similarity.js";
 
