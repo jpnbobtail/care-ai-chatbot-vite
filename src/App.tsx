@@ -253,6 +253,20 @@ export default function App() {
     }
   }
 
+  async function saveFaq(question: string, answer: string) {
+  try {
+    await fetch("/api/faq/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, answer }),
+    });
+  } catch (e) {
+    // FAQ保存に失敗してもチャット本体は止めない
+    console.warn("FAQ save failed", e);
+  }
+}
+
+
   // ---------------------------
   // Chat send
   // ---------------------------
@@ -283,7 +297,8 @@ export default function App() {
         ts: nowTs(),
       };
 
-      setMessages((prev) => [...prev, botMsg]);
+        setMessages((prev) => [...prev, botMsg]);
+        saveFaq(userMessage, answer);
 
       // shared FAQ: add then refresh
       await addFaq(q, answerText);
