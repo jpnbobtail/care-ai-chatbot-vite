@@ -13,9 +13,6 @@ type FaqItem = {
   source?: string;
 };
 
-function nowTs() {
-  return Date.now();
-}
 
 function formatTime(ts: number) {
   const d = new Date(ts);
@@ -36,7 +33,7 @@ export default function App() {
   // Chat
   // ---------------------------
   const [input, setInput] = useState("");
-  const [isSending, setIsSending] = useState(false);
+  const [isSending] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     try {
       const raw = localStorage.getItem("careit_chat_history");
@@ -119,19 +116,7 @@ export default function App() {
     }
   }
 
-  async function addFaq(question: string, answer: string) {
-    try {
-      await fetch("/api/faq/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, answer, source: "chat" }),
-      });
-    } catch {
-      // FAQ登録失敗は致命ではないので握りつぶす
-    }
-  }
-
-  // ---------------------------
+    // ---------------------------
   // Auth flow
   // ---------------------------
   async function handleLogin() {
@@ -271,51 +256,51 @@ export default function App() {
   // Chat send
   // ---------------------------
   async function sendMessage() {
-    const q = input.trim();
-    if (!q) return;
-    if (isSending) return;
+  const text = input.trim();
+  if (!text) return;
 
-    setIsSending(true);
-    setInput("");
+  // ★ userMessage を sendMessage 内で定義
+  const userMessage = text;
 
-    const userMsg: ChatMessage = { role: "user", content: q, ts: nowTs() };
-    setMessages((prev) => [...prev, userMsg]);
+  setInput("");
 
-    try {
-      const r = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: q }),
-      });
+  // ユーザー発言を追加
+  setMessages((prev) => [...prev, { role: "user", content: userMessage,ts: Date.now() }]);
 
-      const j = await r.json().catch(() => ({}));
-      const answerText = String(j?.answer ?? "回答を取得できませんでした。");
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userMessage }),
+    });
 
-      const botMsg: ChatMessage = {
-        role: "assistant",
-        content: answerText,
-        ts: nowTs(),
-      };
+    // res.ok で失敗時も内容を確認できるようにする
+    const data = await res.json().catch(() => null);
 
-        setMessages((prev) => [...prev, botMsg]);
-        saveFaq(userMessage, answer);
+    // ★ answer を sendMessage 内で定義
+    const answer =
+      data && typeof data.answer === "string"
+        ? data.answer
+        : "回答を取得できませんでした";
 
-      // shared FAQ: add then refresh
-      await addFaq(q, answerText);
-      await refreshFaq();
-    } catch (e) {
-      const botMsg: ChatMessage = {
-        role: "assistant",
-        content: "AI呼び出しでエラーが発生しました。",
-        ts: nowTs(),
-      };
-      setMessages((prev) => [...prev, botMsg]);
-    } finally {
-      setIsSending(false);
-    }
+    // AI発言を追加
+    setMessages((prev) => [...prev, { role: "assistant", content: answer,ts: Date.now() }]);
+
+    // ★ ここなら userMessage / answer が必ず存在する
+    await saveFaq(userMessage, answer);
+
+    // （あなたの speak があるなら）
+    if (typeof speak === "function") speak(answer);
+  } catch (e) {
+    console.error(e);
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: "エラーが発生しました。",ts: Date.now() },
+    ]);
   }
+}
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       void sendMessage();
     }
