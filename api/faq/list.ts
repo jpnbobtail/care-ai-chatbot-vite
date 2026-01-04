@@ -1,48 +1,38 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  const url = process.env.FAQ_WEBAPP_URL;
-  const apiKey = process.env.FAQ_API_KEY;
-
-  if (!url || !apiKey) {
-    return res.status(500).json({ error: "FAQ env vars missing" });
-  }
-
   try {
-    // GAS側がGET対応ならこれでOK（POSTしか無い場合は下のコメント案に切替）
-    const r = await fetch(`${url}?action=list&apiKey=${encodeURIComponent(apiKey)}`, {
-      method: "GET",
-    });
+    if (req.method !== "GET") {
+      return res.status(405).json({ error: "Method not allowed" });
+    }
 
+    const FAQ_WEBAPP_URL = process.env.FAQ_WEBAPP_URL || "";
+    const FAQ_API_KEY = process.env.FAQ_API_KEY || "";
+
+    if (!FAQ_WEBAPP_URL || !FAQ_API_KEY) {
+      return res.status(500).json({ error: "FAQ env vars missing" });
+    }
+
+    const url = new URL(FAQ_WEBAPP_URL);
+    url.searchParams.set("action", "list");
+    url.searchParams.set("apiKey", FAQ_API_KEY);
+
+    const r = await fetch(url.toString(), { method: "GET" });
     const text = await r.text();
+
     if (!r.ok) {
       return res.status(500).json({ error: "FAQ list failed", detail: text });
     }
 
-    let data: any = [];
+    // ✅ GASの返却 { items: [...] } をそのまま返す（包まない）
     try {
-      data = JSON.parse(text);
+      const data = JSON.parse(text);
+      return res.status(200).json(data);
     } catch {
-      data = [];
+      return res.status(500).json({ error: "FAQ list parse failed", detail: text });
     }
-
-    return res.status(200).json({ items: data });
-  } catch (e: any) {
-    console.error(e);
-    return res.status(500).json({ error: "FAQ list error" });
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).json({ error: "FAQ list failed", detail: String(err) });
   }
 }
-
-/**
- * もしGASが「POSTでしかlistできない」仕様なら、上の fetch をこれに差し替え：
- *
- * const r = await fetch(url, {
- *   method: "POST",
- *   headers: { "Content-Type": "application/json" },
- *   body: JSON.stringify({ apiKey, action: "list" }),
- * });
- */
